@@ -10,9 +10,12 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 import java.io.IOException;
+
+import static java.lang.Math.floor;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,8 +33,19 @@ public class MainActivity extends AppCompatActivity {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    Bitmap bm = Bitmap.createBitmap(srcMat.cols(), srcMat.rows(), Bitmap.Config.ARGB_8888);
-                    Utils.matToBitmap(srcMat, bm);
+                    Log.d("OpenCV", "no. channels = "+srcMat.channels()+ ", size=" + srcMat.size());
+                    // process image here
+                    int size = (int)srcMat.total()*srcMat.channels();
+                    byte[] buff = new byte[size];
+                    srcMat.get(0,0,buff);
+                    for(int i=0;i<size;i++){
+                        buff[i]= (byte) (((char)buff[i]/128)*128);
+                    }
+                    Mat dstMat = new Mat(srcMat.size(), CvType.CV_8UC1);
+                    dstMat.put(0,0,buff);
+                    // write to bmp and show
+                    Bitmap bm = Bitmap.createBitmap(dstMat.cols(), dstMat.rows(), Bitmap.Config.ARGB_8888);
+                    Utils.matToBitmap(dstMat, bm);
                     iv.setImageBitmap(bm);
                     break;
                 default:
