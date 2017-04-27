@@ -12,6 +12,7 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.IOException;
 
@@ -35,14 +36,22 @@ public class MainActivity extends AppCompatActivity {
                     }
                     Log.d("OpenCV", "no. channels = "+srcMat.channels()+ ", size=" + srcMat.size());
                     // process image here
-                    int size = (int)srcMat.total()*srcMat.channels();
+                    Mat dstMat = new Mat(srcMat.size(), CvType.CV_8UC1);
+                    // custom kernel
+                    Mat kernel = new Mat(3,3,CvType.CV_8SC1);
+                    kernel.put(0,0,0,-1,0,-1,5,-1,0,-1,0); // sharpening
+                    //kernel.put(0,0,0,-1,0,-1,4,-1,0,-1,0);
+                    // 2D filter
+                    Imgproc.filter2D(srcMat, dstMat, srcMat.depth(), kernel);
+                    // Thresholding
+                    /*int size = (int)srcMat.total()*srcMat.channels();
                     byte[] buff = new byte[size];
                     srcMat.get(0,0,buff);
                     for(int i=0;i<size;i++){
                         buff[i]= (byte) (((char)buff[i]/128)*128);
                     }
-                    Mat dstMat = new Mat(srcMat.size(), CvType.CV_8UC1);
                     dstMat.put(0,0,buff);
+                    */
                     // write to bmp and show
                     Bitmap bm = Bitmap.createBitmap(dstMat.cols(), dstMat.rows(), Bitmap.Config.ARGB_8888);
                     Utils.matToBitmap(dstMat, bm);
